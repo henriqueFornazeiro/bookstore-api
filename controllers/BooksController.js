@@ -206,7 +206,7 @@ const BooksController = {
       })
 
       return res
-        .status(201)
+        .status(204)
         .json({ message: "Livro excluído com sucesso"});
         
     } catch (error) {
