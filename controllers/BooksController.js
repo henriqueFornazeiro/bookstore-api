@@ -75,14 +75,15 @@ const BooksController = {
   },
   store: async (req, res) => {
     try {
-      const { title, total_pages, author, release_year, stock } = req.body;
+      const { title, total_pages, author, release_year, stock, country_code } = req.body;
 
       if (
         title == "" ||
         total_pages == "" ||
         author == "" ||
         release_year == "" ||
-        stock == ""
+        stock == "" ||
+        country_code == ""
       ) {
         return res
           .status(404)
@@ -95,6 +96,7 @@ const BooksController = {
         author,
         release_year,
         stock,
+        country_code
       });
 
       return res
@@ -131,9 +133,9 @@ const BooksController = {
     try {
       const {id} = req.params;
 
-      const { title, total_pages, author, release_year, stock } = req.body;
+      const { title, total_pages, author, release_year, stock, country_code } = req.body;
 
-      if ( title == "" || total_pages == "" || author == "" || release_year == "" || stock == "" ) {
+      if ( title == "" || total_pages == "" || author == "" || release_year == "" || stock == "" || country_code == "" ) {
         return res
           .status(404)
           .json({ message: "Verifique. Há campo(s) vazio(s)." });
@@ -150,7 +152,8 @@ const BooksController = {
         total_pages: Number(total_pages),
         author,
         release_year,
-        stock: Number(stock)
+        stock: Number(stock),
+        country_code
       },{
         where:{
             id

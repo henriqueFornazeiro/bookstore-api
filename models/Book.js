@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER(10),
       allowNull: false,
     },
+    country_code: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+    },
   },{
     tableName: "books",
     timestamp: true
