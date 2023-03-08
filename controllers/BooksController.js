@@ -1,4 +1,5 @@
 const { Book } = require("../models");
+const countriesApi = require("../services/countries");
 
 const BooksController = {
   index: async (req, res) => {
@@ -40,13 +41,23 @@ const BooksController = {
     try {
       const { id } = req.params;
 
-      const book = await Book.findByPk(id);
+      const book = await Book.findByPk(id, {raw:true});
 
       if (!book) {
         return res.status(404).json({ message: "Livro não encontrado" });
       }
 
+      const countryCode = book.country_code;
+
+      const country = await countriesApi.getByAlphaCode(countryCode);
+
+      book.country = {
+        name: country[0].name.common,
+        flag: country[0].flags.svg
+      }
+
       return res.status(200).json({ data: book });
+
     } catch (error) {
       console.log(error);
       if (error.name === "SequelizeConnectionRefusedError") {
@@ -75,7 +86,8 @@ const BooksController = {
   },
   store: async (req, res) => {
     try {
-      const { title, total_pages, author, release_year, stock, country_code } = req.body;
+      const { title, total_pages, author, release_year, stock, country_code } =
+        req.body;
 
       if (
         title == "" ||
@@ -96,13 +108,12 @@ const BooksController = {
         author,
         release_year,
         stock,
-        country_code
+        country_code,
       });
 
       return res
         .status(201)
         .json({ message: "Livro criado com sucesso", data: book });
-
     } catch (error) {
       console.log(error);
       if (error.name === "SequelizeConnectionRefusedError") {
@@ -131,11 +142,19 @@ const BooksController = {
   },
   edit: async (req, res) => {
     try {
-      const {id} = req.params;
+      const { id } = req.params;
 
-      const { title, total_pages, author, release_year, stock, country_code } = req.body;
+      const { title, total_pages, author, release_year, stock, country_code } =
+        req.body;
 
-      if ( title == "" || total_pages == "" || author == "" || release_year == "" || stock == "" || country_code == "" ) {
+      if (
+        title == "" ||
+        total_pages == "" ||
+        author == "" ||
+        release_year == "" ||
+        stock == "" ||
+        country_code == ""
+      ) {
         return res
           .status(404)
           .json({ message: "Verifique. Há campo(s) vazio(s)." });
@@ -147,25 +166,27 @@ const BooksController = {
         return res.status(404).json({ message: "Livro não encontrado" });
       }
 
-      await Book.update({
-        title,
-        total_pages: Number(total_pages),
-        author,
-        release_year,
-        stock: Number(stock),
-        country_code
-      },{
-        where:{
-            id
+      await Book.update(
+        {
+          title,
+          total_pages: Number(total_pages),
+          author,
+          release_year,
+          stock: Number(stock),
+          country_code,
+        },
+        {
+          where: {
+            id,
+          },
         }
-      });
+      );
 
       const book = await Book.findByPk(id);
 
       return res
         .status(201)
-        .json({ message: "Livro atualizado com sucesso", data:book});
-        
+        .json({ message: "Livro atualizado com sucesso", data: book });
     } catch (error) {
       console.log(error);
       if (error.name === "SequelizeConnectionRefusedError") {
@@ -194,7 +215,7 @@ const BooksController = {
   },
   destroy: async (req, res) => {
     try {
-      const {id} = req.params;
+      const { id } = req.params;
 
       const existsBook = await Book.findByPk(id);
 
@@ -204,14 +225,11 @@ const BooksController = {
 
       await Book.destroy({
         where: {
-          id
+          id,
         },
-      })
+      });
 
-      return res
-        .status(204)
-        .json({ message: "Livro excluído com sucesso"});
-        
+      return res.status(204).json({ message: "Livro excluído com sucesso" });
     } catch (error) {
       console.log(error);
       if (error.name === "SequelizeConnectionRefusedError") {
